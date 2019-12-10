@@ -1,7 +1,6 @@
 var axios = require('axios')
 
 users=[
-
     {
         name: "Sadiat Alau",
         staffID: '001',
@@ -20,15 +19,13 @@ users=[
 ]
 
 module.exports = {
-
-
     init:async ()=>{
       //  console.log('=>',users)
         var getUsers= await axios.get('http://localhost:4000/api/users'). then((res)=>{
            return res.data
         })
        // console.log(getUsers.length)
-        
+
 
         if (getUsers.length === 0){
           //  console.log('=>',users)
@@ -39,15 +36,15 @@ module.exports = {
                 .then((res)=>{
                      console.log(res.data)
                 })
-                
+
             });
         }else{
             console.log('Users have been created')
           //  console.log(getUsers)
-        
+
         }
 
     }
-    
+
 
 }
