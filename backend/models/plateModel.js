@@ -8,6 +8,11 @@ const plateNumberSchema = new mongoose.Schema({
         unique: true
     },
 
+    lgaCode: {
+        type: String,
+        required: true
+    },
+
     createdBy: {
         type: String,
         required: true,

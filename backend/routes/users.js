@@ -6,8 +6,14 @@ User = require('../models/userModel')
 router.get('/api/users', async function(req, res, next) {
 
   await User.find((err, users)=>{
+    
+    if(!users){
+      res.json('No user')
 
-    res.send(users)
+    }else {
+      res.status(200).send(users)
+    }
+    
   })
 
   

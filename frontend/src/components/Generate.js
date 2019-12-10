@@ -87,7 +87,7 @@ class Generate extends Component {
             this.setState({showPopup: true})
         }else{
             //get all plates in db
-            await calculations.getPlateNumberinDB()
+            await calculations.getPlateNumberinDB(this.state.displayedLGA)
             .then((res)=>{
                 console.log(res)
                 this.setState({allPlatesinDB: res})
@@ -100,7 +100,8 @@ class Generate extends Component {
                 plateNumbers.forEach (async element => {
                     var body={
                         createdBy: user.data.name,
-                        plateNumber: element
+                        plateNumber: element,
+                        lgaCode: this.state.displayedLGA
                     }    
                     await apiCalls.createPlates(body)       
                     .then((res)=>{

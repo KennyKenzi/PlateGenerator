@@ -1,47 +1,87 @@
 import React, { Component } from 'react';
 //import {Dropdown} from 'semantic-ui-react';
 import Select from 'react-select'
-
+//import Select from 'react-virtualized-select'
 import 'react-virtualized/styles.css'
 import 'react-virtualized-select/styles.css'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
-
+import calculations from '../configs/calculations'
+import apiCalls from '../configs/apis';
 
 
 class Report extends Component {
     state = {
       
         selectedUserOption: null,
-
-        countryOptions: [
-            { key: 'af', value: 'af', flag: 'af', text: 'Afghanistan' },
-            { key: 'ax', value: 'ax', flag: 'ax', text: 'Aland Islands' },
-            { key: 'al', value: 'al', flag: 'al', text: 'Albania' },
-            { key: 'dz', value: 'dz', flag: 'dz', text: 'Algeria' },
-            { key: 'as', value: 'as', flag: 'as', text: 'American Samoa' },
-            { key: 'ad', value: 'ad', flag: 'ad', text: 'Andorra' },
-            { key: 'ao', value: 'ao', flag: 'ao', text: 'Angola' },
-            { key: 'ai', value: 'ai', flag: 'ai', text: 'Anguilla' },
-            { key: 'ag', value: 'ag', flag: 'ag', text: 'Antigua' },
-            { key: 'ar', value: 'ar', flag: 'ar', text: 'Argentina' },
-            { key: 'am', value: 'am', flag: 'am', text: 'Armenia' },
-            { key: 'aw', value: 'aw', flag: 'aw', text: 'Aruba' },
-            { key: 'au', value: 'au', flag: 'au', text: 'Australia' },
-            { key: 'at', value: 'at', flag: 'at', text: 'Austria' },
-            { key: 'az', value: 'az', flag: 'az', text: 'Azerbaijan' },
-            { key: 'bs', value: 'bs', flag: 'bs', text: 'Bahamas' },
-            { key: 'bh', value: 'bh', flag: 'bh', text: 'Bahrain' },
-            { key: 'bd', value: 'bd', flag: 'bd', text: 'Bangladesh' },
-            { key: 'bb', value: 'bb', flag: 'bb', text: 'Barbados' },
-            { key: 'by', value: 'by', flag: 'by', text: 'Belarus' },
-            { key: 'be', value: 'be', flag: 'be', text: 'Belgium' },
-            { key: 'bz', value: 'bz', flag: 'bz', text: 'Belize' },
-            { key: 'bj', value: 'bj', flag: 'bj', text: 'Benin' },
-          ],
-          date: new Date()
+        displayedUser: "",
+        displayedUserPlaceholder: "Filter By Person",
+        userList:[],
+        plateList:[],
+        selectedBeforeDate: "",
+        selectedAfterDate: "",
+        placeholderTextB4:'From',
+        placeholderTextAfter: 'To'        
 
       }
+
+
+
+    componentDidMount= async()=>{    
+        await calculations.getPlateNumberinDB().then((res)=>{     
+            this.setState({plateList:res})
+        })
+        await calculations.getUsersForList().then((res)=>{
+            this.setState({userList:res})
+        })   
+    }
+
+
+
+    onChangeUser=async(e)=>{
+        this.setState({displayedUserPlaceholder:e.label})
+        this.setState({displayedUser: e.label}, async()=>{
+        
+        //get plates by user and save to state
+        await apiCalls.filterByAll(this.state.displayedUser,this.state.selectedBeforeDate, this.state.selectedAfterDate)
+        .then((res)=>{
+            this.setState({plateList:res.data})
+            })
+            this.setDefaultDates(this.state.selectedBeforeDate,this.state.selectedAfterDate)
+        })  
+    }
+
+
+    setDefaultDates=(before, after)=>{
+        if(before === ""){
+            this.setState({selectedBeforeDate: new Date().toDateString()})
+        }
+        if(after===""){
+            this.setState({selectedAfterDate: new Date().toDateString()})
+        }
+    }
+
+    onChangeDate1 = async(e)=>{
+        this.setState({placeholderTextB4: e.toDateString()}) 
+        this.setState({selectedBeforeDate: e.toDateString()}, async()=>{
+            await apiCalls.filterByAll(this.state.displayedUser,this.state.selectedBeforeDate, this.state.selectedAfterDate) 
+            .then((res)=>{
+                this.setState({plateList:res.data})
+                })
+            this.setDefaultDates(this.state.selectedBeforeDate,this.state.selectedAfterDate)
+        })
+    }
+    onChangeDate2 = async(e)=>{
+        this.setState({placeholderTextAfter: e.toDateString()}) 
+        this.setState({selectedAfterDate: e.toDateString()}, async()=>{
+            await apiCalls.filterByAll(this.state.displayedUser,this.state.selectedBeforeDate, this.state.selectedAfterDate)
+            .then((res)=>{
+                this.setState({plateList:res.data})
+                }) 
+            this.setDefaultDates(this.state.selectedBeforeDate,this.state.selectedAfterDate)              
+        })
+    }
+
 
 
 
@@ -55,27 +95,30 @@ class Report extends Component {
                 
                 <div style={{width:'10%'}} >
                   <Select   
-                  className="search"
-                  placeholder='Select User'
-                  value="af"
-                  options={this.state.countryOptions}/>  
+                    className="search"
+                    placeholder={this.state.displayedUserPlaceholder}
+                    value={this.state.displayedUser}
+                    onChange = {this.onChangeUser}
+                    options={this.state.userList}/>  
                 </div>
                 
                 <div>
                   <DatePicker
-                  placeholderText="From"
+                  placeholderText={this.state.placeholderTextB4}
                   name="fromDate"
                   id="fromDate"
-                  value= {this.state.date} 
+                  value= {this.state.selectedBeforeDate} 
+                  onChange={this.onChangeDate1}
                   className="form-control datepicker"/> 
                 </div>
 
                 <div>
                 <DatePicker
-                  placeholderText="To"
+                  placeholderText={this.state.placeholderTextAfter}
                   name="toDate"
                   id="toDate"
-                  value= {this.state.date} 
+                  value= {this.state.selectedAfterDate} 
+                  onChange={this.onChangeDate2}
                   className="form-control datepicker"/> 
                 </div>
                
@@ -93,40 +136,17 @@ class Report extends Component {
                         </thead>
                         <tbody>
 
-                            <tr key='1'>
-                                <th scope="row">#</th>
-                                <td>ALS001GH</td>
-                                <td>Salau Yusuf</td>
-                                 <td>12/12/2018</td>
-                            </tr>
-                            <tr key='1'>
-                                <th scope="row">#</th>
-                                <td>ALS00ER</td>
-                                <td>Salau Yusuf</td>
-                                 <td>12/12/2018</td>
-                            </tr>
+                            {this.state.plateList ? 
 
-                            {/* {this.state.priceList.map((el, index)=>{
-                                if(el.activeStatus === true){
-                                    return (
-                                        <tr key={el._id}>
-                                        <th scope="row">{index+1}</th>
-                                        <td>{el.productGroup}</td>
-                                        <td>{el.name}</td>
-                                        <td>{el.price}</td>
-                                        </tr>)
-                                }else{
-                                    return (
-                                            <tr key={el._id}style={{textDecoration:"line-through", color:'grey'}}>
-                                            <th scope="row">#</th>
-                                            <td>{el.productGroup}</td>
-                                            <td>{el.name}</td>
-                                            <td>{el.price}</td>
-                                            </tr>)
-                                    
-                                }
-                                
-                            })} */}
+                                this.state.plateList.map((el)=>{
+                                    return(
+                                    <tr key={el._id}>
+                                        <th scope="row">#</th>
+                                        <td>{el.plateNumber}</td>
+                                        <td>{el.createdBy}</td>
+                                        <td>{el.createdOn.split('T')[0]}</td>
+                                    </tr>
+                                )}): null}                        
 
                         </tbody>
                         </table>

@@ -8,7 +8,7 @@ import apiCalls from '../configs/apis'
   const calculations ={
   
     plateGenerator: (data, LGA, number)=>{
-defaultStatus
+
         var alphabets = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
         var middleNumber =[]
         
@@ -76,27 +76,65 @@ defaultStatus
     },
 
 
-    getPlateNumberinDB: async ()=>{
+    getPlateNumberinDB: async (lga)=>{
       var allPlates=[]
-      await apiCalls.getAllPlates()
-      .then((res)=>{
-        
+
+      if(lga){
+        await apiCalls.getAllPlatesLGA(lga)
+        .then((res)=>{
           
-          res.data.forEach(element => {
-              allPlates.push(element.plateNumber)   
-          });
-       
-       // console.log(allPlates)
-      })
+            res.data.forEach(element => {
+                allPlates.push(element.plateNumber)   
+            });
+         
+        })
+
+      }else {
+        await apiCalls.getAllPlates()
+        .then((res)=>{
+          
+            res.data.forEach(element => {
+                allPlates.push(element)   
+            });
+         
+        })
+
+      }
+      
       return allPlates
     },
 
    
     deletePlateNumbers:async(plateNumber)=>{
        return await apiCalls.deletePlateNumber(plateNumber)   
-    }
+    },
 
+    getUsersForList: async()=>{
+      var array =  await apiCalls.getallUsers()
+     // console.log(array.data)
+      return array.data.map((el)=>{
 
+        return{
+          value: el._id,
+          label: el.name
+        }
+
+      })
+    },
+
+    filterUser: async(body)=>{
+      console.log(body)
+      return await apiCalls.filterByUser(body)
+    },
+
+    // getDate: ()=>{
+
+    //   var date = new Date().getDate()
+    //   var date2 = new Date().toDateString()
+
+    //   var final = date2
+    //   console.log(final)
+    // }
 
 
   }

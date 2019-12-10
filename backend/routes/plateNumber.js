@@ -45,6 +45,23 @@ router.get('/api/generate', function(req, res, next) {
     })
 });
 
+router.get('/api/getplate/:id', function(req, res, next) {
+    var id = req.params.id
+
+  //  console.log('======>',id)    
+    Plate.find({lgaCode: id},function(err, plateNumber){
+
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('======>',plateNumber)  
+            res.status(200).send(plateNumber);
+        }
+    })
+
+
+});
+
 
 router.get('/api/generate/:id', function(req, res, next) {
     var id = req.params.id
@@ -57,13 +74,12 @@ router.get('/api/generate/:id', function(req, res, next) {
 });
 
 
-router.get('/api/delete/:id', function(req, res, next) {
-    var id = req.params.id
-    console.log(id)
+router.get('/api/delete/:lga', function(req, res, next) {
+    var lga = req.params.lga
+    console.log(lga)
     
-    Plate.deleteOne({plateNumber:id}, (err, plateNumber)=>{
+    Plate.deleteOne({plateNumber:lga}, (err, plateNumber)=>{
         if(err) throw err
-        console.log(plateNumber)
         res.status(200).send(plateNumber);
 
     })
